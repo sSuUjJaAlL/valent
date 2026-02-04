@@ -24,11 +24,20 @@ const topMedia = [
   { type: "image", src: img8 },
 ];
 
+// ✅ Flower type
+type Flower = {
+  top: string;
+  left: string;
+  rotate: string;
+  speed: number;
+  sway: number;
+};
+
 export default function Page() {
   const [noCount, setNoCount] = useState(0);
   const [yesPressed, setYesPressed] = useState(false);
   const [topMediaIndex, setTopMediaIndex] = useState(0);
-  const [flowerPositions, setFlowerPositions] = useState([]);
+  const [flowerPositions, setFlowerPositions] = useState<Flower[]>([]);
 
   const yesButtonSize = 16 + noCount * 18;
 
@@ -50,14 +59,13 @@ export default function Page() {
 
   // Generate 100 random flower positions anywhere
   useEffect(() => {
-    const positions = [];
+    const positions: Flower[] = [];
     for (let i = 0; i < 100; i++) {
       const top = Math.random() * 100 + "%";
       const left = Math.random() * 100 + "%";
       const rotate = Math.floor(Math.random() * 360) + "deg";
-      // Random speed and sway
-      const speed = 20 + Math.random() * 40; // seconds for full animation
-      const sway = 10 + Math.random() * 20; // degrees sway
+      const speed = 20 + Math.random() * 40;
+      const sway = 10 + Math.random() * 20;
       positions.push({ top, left, rotate, speed, sway });
     }
     setFlowerPositions(positions);
@@ -82,7 +90,7 @@ export default function Page() {
         />
       ))}
 
-      {/* Add keyframe animations dynamically */}
+      {/* Keyframes for floating */}
       <style>
         {flowerPositions.map(
           (pos, i) => `
