@@ -81,20 +81,23 @@ export default function Page() {
         <>
           {/* Top media that changes on NO click */}
           {topMedia[topMediaIndex].type === "video" ? (
-            <video
-              className="h-[200px] w-auto mb-4 object-contain"
-              src={topMedia[topMediaIndex].src}
-              autoPlay
-              loop
-              muted
-            />
-          ) : (
-            <img
-              className="h-[200px] w-auto mb-4 object-contain"
-              src={topMedia[topMediaIndex].src}
-              alt="top media"
-            />
-          )}
+  <video
+    className="h-[200px] w-auto mb-4 object-contain"
+    src={topMedia[topMediaIndex].src}
+    autoPlay
+    loop
+    muted           // ✅ required for autoplay on mobile
+    playsInline     // ✅ prevents fullscreen hijack on iOS
+    preload="auto"  // optional but recommended
+  />
+) : (
+  <img
+    className="h-[200px] w-auto mb-4 object-contain"
+    src={topMedia[topMediaIndex].src}
+    alt="top media"
+  />
+)}
+
 
           <h1 className="my-4 text-4xl">Will you be my Valentine?</h1>
 
