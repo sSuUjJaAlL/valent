@@ -1,5 +1,6 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+
 import introVideo from "./assets/intro.mp4";
 import img1 from "./assets/angry.jpeg";
 import img2 from "./assets/angry2.jpeg";
@@ -11,6 +12,10 @@ import img7 from "./assets/img5.jpeg";
 import img8 from "./assets/img6.jpeg";
 import lovimg from "./assets/love.jpeg";
 import flower from "./assets/flower.jpg";
+
+import romantic from "./assets/romantic.mp3";
+import angry from "./assets/angry.mp3";
+import best from "./assets/best_part.mp3";
 
 const topMedia = [
   { type: "video", src: introVideo },
@@ -24,7 +29,6 @@ const topMedia = [
   { type: "image", src: img8 },
 ];
 
-// ✅ Flower type
 type Flower = {
   top: string;
   left: string;
@@ -39,28 +43,87 @@ export default function Page() {
   const [topMediaIndex, setTopMediaIndex] = useState(0);
   const [flowerPositions, setFlowerPositions] = useState<Flower[]>([]);
 
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const musicStarted = useRef(false);
+
   const yesButtonSize = 16 + noCount * 18;
 
+  // 🎵 START ROMANTIC ON FIRST INTERACTION (100% working)
+  useEffect(() => {
+    const startMusic = () => {
+      if (musicStarted.current) return;
+      musicStarted.current = true;
+
+      if (audioRef.current) {
+        audioRef.current.src = romantic;
+        audioRef.current.loop = true;
+        audioRef.current.volume = 1;
+        audioRef.current.currentTime = 0;
+        audioRef.current.play().catch(() => {});
+      }
+
+      document.removeEventListener("click", startMusic);
+      document.removeEventListener("mousemove", startMusic);
+      document.removeEventListener("touchstart", startMusic);
+    };
+
+    document.addEventListener("click", startMusic);
+    document.addEventListener("mousemove", startMusic);
+    document.addEventListener("touchstart", startMusic);
+
+    return () => {
+      document.removeEventListener("click", startMusic);
+      document.removeEventListener("mousemove", startMusic);
+      document.removeEventListener("touchstart", startMusic);
+    };
+  }, []);
+
+  // ❌ NO CLICK
   const handleNoClick = () => {
     setNoCount((prev) => prev + 1);
     setTopMediaIndex((prev) => (prev + 1) % topMedia.length);
+
+    if (audioRef.current) {
+      audioRef.current.src = angry;
+      audioRef.current.loop = false;
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch(() => {});
+    }
+  };
+
+  // ✅ YES CLICK
+  const handleYesClick = () => {
+    setYesPressed(true);
+
+    if (audioRef.current) {
+      audioRef.current.src = best;
+      audioRef.current.loop = true;
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch(() => {});
+    }
   };
 
   const getNoButtonText = () => {
     const phrases = [
-      "NO", "SAchiiiiiii😔😔😔😔", "Kassammm🙄🙄🙄🙄", "Bhetlas hai fuchhi😡😡😡😡",
-      "YEs click gara bbbbb😘😘😘😘😘", "Ghuchuk ma tuchuk hola🙏🏻🙏🏻🙏🏻🙏🏻", "Ass jasto chhito yes click han🍑🍑🍑🍑",
-      "Mero babyyyyy❤️❤️❤️❤️❤️", "But :*(", "I am going to die", "Yep im dead",
-      "ok ur talking to nathan's ghost", "please babe", ":((((", "PRETTY PLEASE",
-      "Estoy muerto", "No :("
+      "NO",
+      "Sachiiii😔",
+      "Kassam🙄",
+      "Bhetlas hai😡",
+      "Yes click gara😘",
+      "Please🙏",
+      "Mero babyyyy❤️",
+      "I am dead",
+      "Ghost speaking",
+      "Pretty please",
+      "Last chance 😭"
     ];
     return phrases[Math.min(noCount, phrases.length - 1)];
   };
 
-  // Generate 100 random flower positions anywhere
+  // 🌸 flowers generate
   useEffect(() => {
     const positions: Flower[] = [];
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 80; i++) {
       const top = Math.random() * 100 + "%";
       const left = Math.random() * 100 + "%";
       const rotate = Math.floor(Math.random() * 360) + "deg";
@@ -72,14 +135,17 @@ export default function Page() {
   }, []);
 
   return (
-    <div className="relative -mt-16 flex h-screen items-center justify-center bg-pink-50 overflow-hidden">
-      {/* Animated Flower images */}
+    <div className="relative flex h-screen items-center justify-center bg-pink-50 overflow-hidden">
+
+      {/* AUDIO PLAYER */}
+      <audio ref={audioRef} />
+
+      {/* FLOWERS */}
       {flowerPositions.map((pos, i) => (
         <img
           key={i}
           src={flower}
-          alt="flower"
-          className="absolute w-32 h-32 opacity-60"
+          className="absolute w-24 opacity-60"
           style={{
             top: pos.top,
             left: pos.left,
@@ -90,61 +156,44 @@ export default function Page() {
         />
       ))}
 
-      {/* Keyframes for floating */}
       <style>
         {flowerPositions.map(
           (pos, i) => `
             @keyframes float-${i} {
-              0% { transform: rotate(${pos.rotate}) translateY(0) translateX(0); }
+              0% { transform: rotate(${pos.rotate}) translateY(0); }
               50% { transform: rotate(${pos.rotate}) translateY(20px) translateX(${pos.sway}px); }
-              100% { transform: rotate(${pos.rotate}) translateY(0) translateX(0); }
+              100% { transform: rotate(${pos.rotate}) translateY(0); }
             }
           `
         ).join("\n")}
       </style>
 
-      {/* Main content */}
-      <div className="relative z-10 flex flex-col items-center justify-center px-4 sm:px-8 md:px-0">
+      {/* MAIN */}
+      <div className="relative z-10 flex flex-col items-center">
+
         {yesPressed ? (
           <>
-            <img
-              src={lovimg}
-              className="h-[200px] w-auto mb-4 object-contain"
-              alt="love"
-            />
-            <div className="my-4 text-4xl font-bold text-center">
-              Chuppppaaaa!!! I love you my kanchuuuuuuu😘😘😘😘😘 ;))
+            <img src={lovimg} className="h-[200px] mb-4"/>
+            <div className="text-4xl font-bold text-center">
+              I love youuuuu 😘😘😘
             </div>
           </>
         ) : (
           <>
             {topMedia[topMediaIndex].type === "video" ? (
-              <video
-                className="h-[200px] w-auto mb-4 object-contain max-w-full"
-                src={topMedia[topMediaIndex].src}
-                autoPlay
-                loop
-                muted
-                playsInline
-                preload="auto"
-              />
+              <video className="h-[200px]" src={topMedia[topMediaIndex].src} autoPlay loop muted />
             ) : (
-              <img
-                className="h-[200px] w-auto mb-4 object-contain max-w-full"
-                src={topMedia[topMediaIndex].src}
-                alt="top media"
-              />
+              <img className="h-[200px]" src={topMedia[topMediaIndex].src}/>
             )}
 
-            <h1 className="my-4 text-4xl sm:text-5xl md:text-6xl text-center">
-              So bb..Will you be my Valentine?
+            <h1 className="text-5xl my-6 text-center">
+              Will you be my Valentine? 🌹
             </h1>
 
-            <div className="flex flex-col sm:flex-row items-center mt-4 gap-4">
-              {/* YES BUTTON */}
+            <div className="flex gap-4">
               <button
-                onClick={() => setYesPressed(true)}
-                className="rounded bg-green-500 px-6 py-3 font-bold text-white hover:bg-green-700 transition-all duration-300"
+                onClick={handleYesClick}
+                className="bg-green-500 text-white px-6 py-3 rounded font-bold"
                 style={{
                   fontSize: yesButtonSize,
                   transform: `scale(${1 + noCount * 0.12})`,
@@ -153,10 +202,9 @@ export default function Page() {
                 Yes
               </button>
 
-              {/* NO BUTTON */}
               <button
                 onClick={handleNoClick}
-                className="rounded bg-red-500 px-6 py-3 font-bold text-white hover:bg-red-700"
+                className="bg-red-500 text-white px-6 py-3 rounded font-bold"
               >
                 {getNoButtonText()}
               </button>
